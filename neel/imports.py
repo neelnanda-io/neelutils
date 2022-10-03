@@ -9,7 +9,7 @@ import torch.multiprocessing as mp
 # from torch.nn.parallel import DistributedDataParallel as DDP
 import numpy as np
 import einops
-import tqdm
+import tqdm.auto as tqdm
 
 import random
 import time
@@ -65,6 +65,9 @@ from rich import print as rprint
 from collections import OrderedDict
 import logging
 import re
+
+from neel.plot import *
+import neel.utils as utils
 
 from collections import defaultdict
 
