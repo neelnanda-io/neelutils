@@ -270,10 +270,6 @@ def line_or_scatter(tensor, plot_type, x=None, mode='multi', squeeze=True, **kwa
         print(color, color_name)
     if squeeze:
         array = array.squeeze()
-    
-    if animation_name:
-        # If animation_name was set, I clearly want to animate things.
-        mode="animate"
 
     df = melt(array)
 
