@@ -60,6 +60,7 @@ import easy_transformer
 # import pysvelte
 from easy_transformer import EasyTransformerConfig
 from easy_transformer import EasyTransformer
+from easy_transformer.utils import lm_cross_entropy_loss, tokenize_and_concatenate, to_numpy, get_corner
 import neel
 from rich import print as rprint
 from collections import OrderedDict

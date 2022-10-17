@@ -114,7 +114,7 @@ DEFAULT_KWARGS = dict(
     legend=True, # Good
     hover=None, # Good
     hover_name="data", # GOod
-    return_fig=True, # Good
+    return_fig=False, # Good
     animation_index=None, # Good
     line_labels=None, # Good
     markers=False, # Good
@@ -270,10 +270,6 @@ def line_or_scatter(tensor, plot_type, x=None, mode='multi', squeeze=True, **kwa
         print(color, color_name)
     if squeeze:
         array = array.squeeze()
-    
-    if animation_name:
-        # If animation_name was set, I clearly want to animate things.
-        mode="animate"
 
     df = melt(array)
 
@@ -359,6 +355,7 @@ line = partial(line_or_scatter, plot_type='line')
 
 # %%
 def imshow_base(array, **kwargs):
+    array = to_numpy(array)
     custom_kwargs, plotly_kwargs = split_kwargs(kwargs)
     fig = px.imshow(array, **plotly_kwargs)
     update_fig(fig, custom_kwargs)
@@ -401,3 +398,4 @@ legend_in_plot_dict = dict(
 def put_legend_in_plot(fig):
     fig.update_layout(legend=legend_in_plot_dict)
 
+# %%
