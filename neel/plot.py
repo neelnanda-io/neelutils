@@ -20,6 +20,7 @@
 #   %config Completer.use_jedi = False
 
 # Import stuff
+from email.mime import base
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -60,7 +61,11 @@ def to_numpy(tensor, flat=False):
         return tensor
     elif isinstance(tensor, list):
         # if isinstance(tensor[0])
-        return np.array(tensor)
+        array = np.array(tensor)
+        if array.dtype != np.dtype("O"):
+            return array
+        else:
+            return to_numpy_ragged_2d(tensor)
     elif isinstance(tensor, torch.Tensor):
         if flat:
             return tensor.flatten().detach().cpu().numpy()
@@ -70,6 +75,18 @@ def to_numpy(tensor, flat=False):
         return np.array(tensor)
     else:
         raise ValueError(f"Input to to_numpy has invalid type: {type(tensor)}")
+
+def to_numpy_ragged_2d(lists):
+    # Assumes input is a ragged list (of lists, tensors or arrays). Further assumes it's 2D
+    lists = list(map(to_numpy, lists))
+    a = len(lists)
+    b = max(map(len, lists))
+    base_array = np.ones((a, b))
+    base_array.fill(np.NINF)
+    for i in range(a):
+        base_array[i, :len(lists[i])]=lists[i]
+    return base_array
+
 
 def melt(tensor):
     arr = to_numpy(tensor)
@@ -397,3 +414,7 @@ legend_in_plot_dict = dict(
 def put_legend_in_plot(fig):
     fig.update_layout(legend=legend_in_plot_dict)
 
+
+# %%
+a = np.array([1., 2.])
+a.f
