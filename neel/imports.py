@@ -69,6 +69,7 @@ import re
 
 from neel.plot import *
 import neel.utils as utils
+import neel.fourier as fourier
 
 from collections import defaultdict
 

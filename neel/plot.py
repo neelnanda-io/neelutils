@@ -61,6 +61,7 @@ def to_numpy(tensor, flat=False):
         return tensor
     elif isinstance(tensor, list):
         # if isinstance(tensor[0])
+        tensor = list(map(to_numpy, tensor))
         array = np.array(tensor)
         if array.dtype != np.dtype("O"):
             return array
@@ -138,7 +139,9 @@ DEFAULT_KWARGS = dict(
     frame_rate=None, # Good
     facet_labels=None,
     debug=False,
-    transition="none", # TODO: Work it out
+    transition="none", # If "none" then turns off animation transitions, it just jumps between frames
+    animation_maxrange_x=True, # Figure out the maximal range if animation across all frames and fix
+    animation_maxrange_y=True, # Figure out the maximal range if animation across all frames and fix
 )
 def split_kwargs(kwargs):
     custom = dict(DEFAULT_KWARGS)
@@ -157,7 +160,10 @@ def split_kwargs(kwargs):
 
 
 def update_play_button(button, custom_kwargs):
-    button.args[1]['transition']['easing']=custom_kwargs['transition']
+    if custom_kwargs['transition']=='none':
+        button.args[1]['transition']['duration']=0
+    else:
+        button.args[1]['transition']['easing']=custom_kwargs['transition']
     if custom_kwargs['frame_rate'] is not None:
         button.args[1]['transition']['duration'] = custom_kwargs['frame_rate']
         button.args[1]['frame']['duration'] = custom_kwargs['frame_rate']
@@ -359,6 +365,12 @@ def line_or_scatter(tensor, plot_type, x=None, mode='multi', squeeze=True, **kwa
         animation_frame=_animation_name,
         hover_data=hover_names,
                 labels = {_x_name:xaxis, 'value':yaxis, _color_name:color_name, _animation_name:animation_name}, **plotly_kwargs)
+    if _animation_name is not None:
+        if custom_kwargs['animation_maxrange_x'] and x is not None:
+            fig.layout.xaxis.range = [x.min(), x.max()]
+        if custom_kwargs['animation_maxrange_y']:
+            fig.layout.yaxis.range = [array.min(), array.max()]
+
     update_fig(fig, custom_kwargs)
     
 
