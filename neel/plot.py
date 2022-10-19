@@ -20,6 +20,7 @@
 #   %config Completer.use_jedi = False
 
 # Import stuff
+from email.mime import base
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -60,7 +61,12 @@ def to_numpy(tensor, flat=False):
         return tensor
     elif isinstance(tensor, list):
         # if isinstance(tensor[0])
-        return np.array(tensor)
+        tensor = list(map(to_numpy, tensor))
+        array = np.array(tensor)
+        if array.dtype != np.dtype("O"):
+            return array
+        else:
+            return to_numpy_ragged_2d(tensor)
     elif isinstance(tensor, torch.Tensor):
         if flat:
             return tensor.flatten().detach().cpu().numpy()
@@ -70,6 +76,18 @@ def to_numpy(tensor, flat=False):
         return np.array(tensor)
     else:
         raise ValueError(f"Input to to_numpy has invalid type: {type(tensor)}")
+
+def to_numpy_ragged_2d(lists):
+    # Assumes input is a ragged list (of lists, tensors or arrays). Further assumes it's 2D
+    lists = list(map(to_numpy, lists))
+    a = len(lists)
+    b = max(map(len, lists))
+    base_array = np.ones((a, b))
+    base_array.fill(np.NINF)
+    for i in range(a):
+        base_array[i, :len(lists[i])]=lists[i]
+    return base_array
+
 
 def melt(tensor):
     arr = to_numpy(tensor)
@@ -114,14 +132,16 @@ DEFAULT_KWARGS = dict(
     legend=True, # Good
     hover=None, # Good
     hover_name="data", # GOod
-    return_fig=True, # Good
+    return_fig=False, # Good
     animation_index=None, # Good
     line_labels=None, # Good
     markers=False, # Good
     frame_rate=None, # Good
     facet_labels=None,
     debug=False,
-    transition="none", # TODO: Work it out
+    transition="none", # If "none" then turns off animation transitions, it just jumps between frames
+    animation_maxrange_x=True, # Figure out the maximal range if animation across all frames and fix
+    animation_maxrange_y=True, # Figure out the maximal range if animation across all frames and fix
 )
 def split_kwargs(kwargs):
     custom = dict(DEFAULT_KWARGS)
@@ -140,7 +160,10 @@ def split_kwargs(kwargs):
 
 
 def update_play_button(button, custom_kwargs):
-    button.args[1]['transition']['easing']=custom_kwargs['transition']
+    if custom_kwargs['transition']=='none':
+        button.args[1]['transition']['duration']=0
+    else:
+        button.args[1]['transition']['easing']=custom_kwargs['transition']
     if custom_kwargs['frame_rate'] is not None:
         button.args[1]['transition']['duration'] = custom_kwargs['frame_rate']
         button.args[1]['frame']['duration'] = custom_kwargs['frame_rate']
@@ -342,6 +365,12 @@ def line_or_scatter(tensor, plot_type, x=None, mode='multi', squeeze=True, **kwa
         animation_frame=_animation_name,
         hover_data=hover_names,
                 labels = {_x_name:xaxis, 'value':yaxis, _color_name:color_name, _animation_name:animation_name}, **plotly_kwargs)
+    if _animation_name is not None:
+        if custom_kwargs['animation_maxrange_x'] and x is not None:
+            fig.layout.xaxis.range = [x.min(), x.max()]
+        if custom_kwargs['animation_maxrange_y']:
+            fig.layout.yaxis.range = [array.min(), array.max()]
+
     update_fig(fig, custom_kwargs)
     
 
@@ -355,6 +384,7 @@ line = partial(line_or_scatter, plot_type='line')
 
 # %%
 def imshow_base(array, **kwargs):
+    array = to_numpy(array)
     custom_kwargs, plotly_kwargs = split_kwargs(kwargs)
     array = to_numpy(array)
     fig = px.imshow(array, **plotly_kwargs)
@@ -381,3 +411,4 @@ legend_in_plot_dict = dict(
 def put_legend_in_plot(fig):
     fig.update_layout(legend=legend_in_plot_dict)
 
+# %%
