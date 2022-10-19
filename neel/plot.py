@@ -356,6 +356,7 @@ line = partial(line_or_scatter, plot_type='line')
 # %%
 def imshow_base(array, **kwargs):
     custom_kwargs, plotly_kwargs = split_kwargs(kwargs)
+    array = to_numpy(array)
     fig = px.imshow(array, **plotly_kwargs)
     update_fig(fig, custom_kwargs)
     if custom_kwargs['return_fig']:
@@ -366,23 +367,6 @@ def imshow_base(array, **kwargs):
 imshow = partial(imshow_base, color_continuous_scale='RdBu', color_continuous_midpoint=0.0, aspect='auto')
 imshow_pos = partial(imshow_base, color_continuous_scale='Blues', aspect='auto')
 
-# %%
-
-
-def imshow_base(array, **kwargs):
-    custom_kwargs, plotly_kwargs = split_kwargs(kwargs)
-    fig = px.imshow(array, **plotly_kwargs)
-    update_fig(fig, custom_kwargs)
-    if custom_kwargs['return_fig']:
-        return fig
-    else:
-        fig.show()
-
-
-imshow = partial(imshow_base, color_continuous_scale='RdBu',
-                 color_continuous_midpoint=0.0, aspect='auto')
-imshow_pos = partial(
-    imshow_base, color_continuous_scale='Blues', aspect='auto')
 
 legend_in_plot_dict = dict(
     xanchor='right',

@@ -20,5 +20,8 @@ setup(
         "wandb",
         "fancy_einsum",
         "accelerate",
+        "plotly",
+        "rich",
+        "matplotlib",
     ],
 )
