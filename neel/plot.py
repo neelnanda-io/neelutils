@@ -20,7 +20,6 @@
 #   %config Completer.use_jedi = False
 
 # Import stuff
-from email.mime import base
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -56,7 +55,7 @@ import re
 
 # %%
 # Key Helpers
-def to_numpy(tensor, flat=False):
+def to_numpy(tensor):
     if isinstance(tensor, np.ndarray):
         return tensor
     elif isinstance(tensor, list):
@@ -68,10 +67,7 @@ def to_numpy(tensor, flat=False):
         else:
             return to_numpy_ragged_2d(tensor)
     elif isinstance(tensor, torch.Tensor):
-        if flat:
-            return tensor.flatten().detach().cpu().numpy()
-        else:
-            return tensor.detach().cpu().numpy()
+        return tensor.detach().cpu().numpy()
     elif type(tensor) in [int, float, bool, str]:
         return np.array(tensor)
     else:
@@ -165,7 +161,6 @@ def update_play_button(button, custom_kwargs):
     else:
         button.args[1]['transition']['easing']=custom_kwargs['transition']
     if custom_kwargs['frame_rate'] is not None:
-        button.args[1]['transition']['duration'] = custom_kwargs['frame_rate']
         button.args[1]['frame']['duration'] = custom_kwargs['frame_rate']
 
 def update_hovertemplate(data, string):
@@ -395,24 +390,6 @@ def imshow_base(array, **kwargs):
 
 imshow = partial(imshow_base, color_continuous_scale='RdBu', color_continuous_midpoint=0.0, aspect='auto')
 imshow_pos = partial(imshow_base, color_continuous_scale='Blues', aspect='auto')
-
-# %%
-
-
-def imshow_base(array, **kwargs):
-    custom_kwargs, plotly_kwargs = split_kwargs(kwargs)
-    fig = px.imshow(array, **plotly_kwargs)
-    update_fig(fig, custom_kwargs)
-    if custom_kwargs['return_fig']:
-        return fig
-    else:
-        fig.show()
-
-
-imshow = partial(imshow_base, color_continuous_scale='RdBu',
-                 color_continuous_midpoint=0.0, aspect='auto')
-imshow_pos = partial(
-    imshow_base, color_continuous_scale='Blues', aspect='auto')
 
 legend_in_plot_dict = dict(
     xanchor='right',
