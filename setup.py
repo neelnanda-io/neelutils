@@ -1,4 +1,5 @@
 from setuptools import setup
+
 setup(
     packages=["neel"],
     description="Neel's personal utils - you're welcome to use, but this is very badly maintained and commented!.",
@@ -13,6 +14,8 @@ setup(
         "datasets",
         "wandb",
         "fancy_einsum",
+        "gradio",
+        "rich",
         # "accelerate",
     ],
 )
