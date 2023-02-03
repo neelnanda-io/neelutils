@@ -447,6 +447,7 @@ line = partial(line_or_scatter, plot_type="line")
 def imshow_base(array, **kwargs):
     array = to_numpy(array)
     custom_kwargs, plotly_kwargs = split_kwargs(kwargs)
+    array = to_numpy(array)
     fig = px.imshow(array, **plotly_kwargs)
     update_fig(fig, custom_kwargs)
     if custom_kwargs["return_fig"]:
