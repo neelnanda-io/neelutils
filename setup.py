@@ -14,10 +14,12 @@ setup(
         "datasets",
         "wandb",
         "fancy_einsum",
-        "gradio",
-        "accelerate",
         "plotly",
         "rich",
         "matplotlib",
+        "transformer_lens",
     ],
+    dependency_links=[
+        'git+https://github.com/neelnanda-io/neel-plotly.',
+    ]
 )

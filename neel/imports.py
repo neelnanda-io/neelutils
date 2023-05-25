@@ -57,8 +57,8 @@ from pprint import pprint
 from dataclasses import dataclass
 from typing import Union, Tuple, List, Dict, Any, Optional, Callable
 from typing_extensions import Literal
-import circuitsvis as cv
-import pysvelte
+# import circuitsvis as cv
+# import pysvelte
 
 import transformer_lens
 # import pysvelte
@@ -73,7 +73,7 @@ from transformer_lens.utils import (
 )
 import transformer_lens.evals as evals
 from transformer_lens.hook_points import HookedRootModule, HookPoint
-from transformer_lens.torchtyping_helper import T
+# from transformer_lens.torchtyping_helper import T
 
 try:
     import transformer_lens.loading_from_pretrained as loading
@@ -81,26 +81,26 @@ except:
     print("Loading from pretrained not present")
     pass
 import transformer_lens.utils as utils
-import neel
+# import neel
 from rich import print as rprint
 from collections import OrderedDict
 import logging
 import re
 
-from neel.plot import *
-import neel.utils as nutils
-import neel.fourier as fourier
+# from neel.plot import *
+# import neel.utils as nutils
+# import neel.fourier as fourier
 
 from collections import defaultdict
 
-import gradio as gr
+# import gradio as gr
 
 from IPython.display import HTML
 
-from fancy_einsum import einsum
-from torchtyping import TensorType as TT
+# from fancy_einsum import einsum
+# from torchtyping import TensorType as TT
 import pprint
-import solu.utils as sutils
+# import solu.utils as sutils
 
 # %%
 from IPython import get_ipython
