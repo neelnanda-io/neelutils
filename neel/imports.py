@@ -88,7 +88,7 @@ import logging
 import re
 
 # from neel.plot import *
-# import neel.utils as nutils
+import neel.utils as nutils
 # import neel.fourier as fourier
 
 from collections import defaultdict
@@ -101,7 +101,6 @@ from IPython.display import HTML
 # from torchtyping import TensorType as TT
 import pprint
 # import solu.utils as sutils
-
 # %%
 from IPython import get_ipython
 
