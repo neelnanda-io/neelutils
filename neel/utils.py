@@ -3,7 +3,7 @@ import torch
 import numpy as np
 import einops
 from transformer_lens.utils import to_numpy
-from IPython.display import display
+from IPython.display import display, HTML
 SPACE = "·"
 NEWLINE="↩"
 TAB = "→"
@@ -36,3 +36,55 @@ def cos(x, y):
 
 def show_df(df):
     display(df.style.background_gradient("coolwarm"))
+
+
+from html import escape
+import colorsys
+
+from IPython.display import display
+
+
+def create_html(strings, values, saturation=0.5, allow_different_length=False):
+    # escape strings to deal with tabs, newlines, etc.
+    escaped_strings = [escape(s, quote=True) for s in strings]
+    processed_strings = [
+        s.replace("\n", "<br/>").replace("\t", "&emsp;").replace(" ", "&nbsp;")
+        for s in escaped_strings
+    ]
+
+    if isinstance(values, torch.Tensor) and len(values.shape)>1:
+        values = values.flatten().tolist()
+    
+    if not allow_different_length:
+        assert len(processed_strings) == len(values)
+
+    # scale values
+    max_value = max(max(values), -min(values))+1e-3
+    scaled_values = [v / max_value * saturation for v in values]
+
+    # create html
+    html = ""
+    for i, s in enumerate(processed_strings):
+        if i<len(scaled_values):
+            v = scaled_values[i]
+        else:
+            v = 0
+        if v < 0:
+            hue = 0  # hue for red in HSV
+        else:
+            hue = 0.66  # hue for blue in HSV
+        rgb_color = colorsys.hsv_to_rgb(
+            hue, v, 1
+        )  # hsv color with hue 0.66 (blue), saturation as v, value 1
+        hex_color = "#%02x%02x%02x" % (
+            int(rgb_color[0] * 255),
+            int(rgb_color[1] * 255),
+            int(rgb_color[2] * 255),
+        )
+        html += f'<span style="background-color: {hex_color}; border: 1px solid lightgray; font-size: 16px; border-radius: 3px;">{s}</span>'
+
+    display(HTML(html))
+
+
+s = create_html(["a", "b\nd", "c        d"], [1, -2, -3])
+s = create_html(["a", "b\nd", "c        d", "e"], [1, -2, -3], allow_different_length=True)
