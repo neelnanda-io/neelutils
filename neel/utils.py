@@ -4,6 +4,8 @@ import numpy as np
 import einops
 from transformer_lens.utils import to_numpy
 from IPython.display import display, HTML
+import pandas as pd
+from neel_plotly import *
 SPACE = "·"
 NEWLINE="↩"
 TAB = "→"
@@ -22,7 +24,7 @@ def process_token(s, model=None):
 process_tokens = lambda l, model: [process_token(s, model) for s in l]
 process_tokens_index = lambda l, model: [f"{process_token(s, model)}/{i}" for i,s in enumerate(l)]
 
-def create_vocab_df(logit_vec, make_probs=False, full_vocab=None):
+def create_vocab_df(logit_vec, make_probs=False, full_vocab=None, model=None):
     if full_vocab is None:
         full_vocab = process_tokens(model.to_str_tokens(torch.arange(model.cfg.d_vocab)))
     vocab_df = pd.DataFrame({"token": full_vocab, "logit": to_numpy(logit_vec)})
@@ -86,5 +88,30 @@ def create_html(strings, values, saturation=0.5, allow_different_length=False):
     display(HTML(html))
 
 
-s = create_html(["a", "b\nd", "c        d"], [1, -2, -3])
-s = create_html(["a", "b\nd", "c        d", "e"], [1, -2, -3], allow_different_length=True)
+# s = create_html(["a", "b\nd", "c        d"], [1, -2, -3])
+# s = create_html(["a", "b\nd", "c        d", "e"], [1, -2, -3], allow_different_length=True)
+
+def add_to_df(df, name, tensor):
+    df[name] = to_numpy(tensor.flatten())
+    return df
+
+def show_df(df):
+    display(df.style.background_gradient("coolwarm"))
+
+def get_induction_scores(model, make_plot=False, batch_size=4, ind_seq_len = 200):
+
+    rand_tokens_vocab = torch.tensor([i for i in range(1000, 10000) if "  " not in model.to_string(i)]).cuda()
+
+    random_tokens = rand_tokens_vocab[torch.randint(0, len(rand_tokens_vocab), (batch_size, ind_seq_len))]
+    bos_tokens = torch.full(
+        (batch_size, 1), model.tokenizer.bos_token_id, dtype=torch.long
+    ).cuda()
+    ind_tokens = torch.cat([bos_tokens, random_tokens, random_tokens], dim=1)
+    print("ind_tokens.shape", ind_tokens.shape)
+    _, ind_cache = model.run_with_cache(ind_tokens)
+
+    ind_head_scores = einops.reduce(
+        ind_cache.stack_activation("pattern").diagonal(ind_seq_len-1, -1, -2),
+        "layer batch head diag_pos -> layer head", "mean")
+    if make_plot: imshow(ind_head_scores, xaxis="Head", yaxis="Layer", title="Induction Head Scores")
+    return ind_head_scores
