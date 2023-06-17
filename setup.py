@@ -18,6 +18,7 @@ setup(
         "rich",
         "matplotlib",
         "transformer_lens",
+        "statsmodels"
     ],
     dependency_links=[
         'git+https://github.com/neelnanda-io/neel-plotly.',

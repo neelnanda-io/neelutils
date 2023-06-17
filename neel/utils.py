@@ -19,8 +19,8 @@ def process_token(s, model=None):
     s = s.replace("\t", TAB)
     return s
 
-process_tokens = lambda l: [process_token(s) for s in l]
-process_tokens_index = lambda l: [f"{process_token(s)}/{i}" for i,s in enumerate(l)]
+process_tokens = lambda l, model: [process_token(s, model) for s in l]
+process_tokens_index = lambda l, model: [f"{process_token(s, model)}/{i}" for i,s in enumerate(l)]
 
 def create_vocab_df(logit_vec, make_probs=False, full_vocab=None):
     if full_vocab is None:
