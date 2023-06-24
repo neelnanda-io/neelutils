@@ -26,7 +26,7 @@ process_tokens_index = lambda l, model: [f"{process_token(s, model)}/{i}" for i,
 
 def create_vocab_df(logit_vec, make_probs=False, full_vocab=None, model=None):
     if full_vocab is None:
-        full_vocab = process_tokens(model.to_str_tokens(torch.arange(model.cfg.d_vocab)))
+        full_vocab = process_tokens(model.to_str_tokens(torch.arange(model.cfg.d_vocab)), model)
     vocab_df = pd.DataFrame({"token": full_vocab, "logit": to_numpy(logit_vec)})
     if make_probs:
         vocab_df["log_prob"] = to_numpy(logit_vec.log_softmax(dim=-1))
@@ -115,3 +115,11 @@ def get_induction_scores(model, make_plot=False, batch_size=4, ind_seq_len = 200
         "layer batch head diag_pos -> layer head", "mean")
     if make_plot: imshow(ind_head_scores, xaxis="Head", yaxis="Layer", title="Induction Head Scores")
     return ind_head_scores
+
+def make_neuron_df(n_layers, d_mlp):
+    neuron_df = pd.DataFrame({
+        "L": [l for l in range(n_layers) for n in range(d_mlp)],
+        "N": [n for l in range(n_layers) for n in range(d_mlp)],
+        "label": [f"L{l}N{n}" for l in range(n_layers) for n in range(d_mlp)],
+    })
+    return neuron_df
