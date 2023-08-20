@@ -6,10 +6,14 @@ from transformer_lens.utils import to_numpy
 from IPython.display import display, HTML
 import pandas as pd
 from neel_plotly import *
+import inspect
+
 SPACE = "·"
 NEWLINE="↩"
 TAB = "→"
 def process_token(s, model=None):
+    if model is None:
+        model = get_variable_from_caller("model")
     if isinstance(s, torch.Tensor):
         s = s.item()
     if isinstance(s, np.int64):
@@ -21,8 +25,19 @@ def process_token(s, model=None):
     s = s.replace("\t", TAB)
     return s
 
-process_tokens = lambda l, model: [process_token(s, model) for s in l]
-process_tokens_index = lambda l, model: [f"{process_token(s, model)}/{i}" for i,s in enumerate(l)]
+def process_tokens(l, model=None):
+    if model is None:
+        model = get_variable_from_caller("model")
+    if isinstance(l, str):
+        l = model.to_str_tokens(l)
+    return [process_token(s, model) for s in l]
+
+def process_tokens_index(l, model=None):
+    if model is None:
+        model = get_variable_from_caller("model")
+    if isinstance(l, str):
+        l = model.to_str_tokens(l)
+    return [f"{process_token(s, model)}/{i}" for i,s in enumerate(l)]
 
 def create_vocab_df(logit_vec, make_probs=False, full_vocab=None, model=None):
     if full_vocab is None:
@@ -123,3 +138,64 @@ def make_neuron_df(n_layers, d_mlp):
         "label": [f"L{l}N{n}" for l in range(n_layers) for n in range(d_mlp)],
     })
     return neuron_df
+
+def get_variable_from_caller(var_name):
+    frame = inspect.currentframe()
+    try:
+        # Move up frames until we find the desired variable
+        while frame.f_back and not var_name in frame.f_globals:
+            frame = frame.f_back
+
+        # Get the global variables from the caller's frame
+        caller_globals = frame.f_globals
+
+        # Retrieve the 'model' variable if it exists
+        variable = caller_globals.get(var_name)
+        if variable is None:
+            raise ValueError(f"The '{var_name}' variable does not exist in the calling scope.")
+        return variable
+    finally:
+        # Ensure proper frame garbage collection
+        del frame
+
+def normalise(tensor, dim=-1):
+    return tensor / tensor.norm(dim=dim, keepdim=True)
+
+def focus_df_column(df, column, top_k=20, ascending=False):
+    show_df(df.sort_values(column, ascending=ascending).head(top_k))
+
+def list_flatten(nested_list):
+    return [x for y in nested_list for x in y]
+def make_token_df(tokens, len_prefix=5, len_suffix=1):
+    str_tokens = [model.to_str_tokens(t) for t in tokens]
+    unique_token = [[f"{s}/{i}" for i, s in enumerate(str_tok)] for str_tok in str_tokens]
+    
+    context = []
+    batch = []
+    pos = []
+    label = []
+    for b in range(tokens.shape[0]):
+        # context.append([])
+        # batch.append([])
+        # pos.append([])
+        # label.append([])
+        for p in range(tokens.shape[1]):
+            prefix = "".join(str_tokens[b][max(0, p-len_prefix):p])
+            if p==tokens.shape[1]-1:
+                suffix = ""
+            else:
+                suffix = "".join(str_tokens[b][p+1:min(tokens.shape[1]-1, p+1+len_suffix)])
+            current = str_tokens[b][p]
+            context.append(f"{prefix}|{current}|{suffix}")
+            batch.append(b)
+            pos.append(p)
+            label.append(f"{b}/{p}")
+    # print(len(batch), len(pos), len(context), len(label))
+    return pd.DataFrame(dict(
+        str_tokens=list_flatten(str_tokens),
+        unique_token=list_flatten(unique_token),
+        context=context,
+        batch=batch,
+        pos=pos,
+        label=label,
+    ))
