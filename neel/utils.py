@@ -40,6 +40,8 @@ def process_tokens_index(l, model=None):
     return [f"{process_token(s, model)}/{i}" for i,s in enumerate(l)]
 
 def create_vocab_df(logit_vec, make_probs=False, full_vocab=None, model=None):
+    if model is None:
+        model = get_variable_from_caller("model")
     if full_vocab is None:
         full_vocab = process_tokens(model.to_str_tokens(torch.arange(model.cfg.d_vocab)), model)
     vocab_df = pd.DataFrame({"token": full_vocab, "logit": to_numpy(logit_vec)})
@@ -166,7 +168,9 @@ def focus_df_column(df, column, top_k=20, ascending=False):
 
 def list_flatten(nested_list):
     return [x for y in nested_list for x in y]
-def make_token_df(tokens, len_prefix=5, len_suffix=1):
+def make_token_df(tokens, len_prefix=5, len_suffix=1, model=None):
+    if model is None:
+        model = get_variable_from_caller("model")
     str_tokens = [model.to_str_tokens(t) for t in tokens]
     unique_token = [[f"{s}/{i}" for i, s in enumerate(str_tok)] for str_tok in str_tokens]
     
