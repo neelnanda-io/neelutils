@@ -30,6 +30,8 @@ def process_tokens(l, model=None):
         model = get_variable_from_caller("model")
     if isinstance(l, str):
         l = model.to_str_tokens(l)
+    elif isinstance(l, torch.Tensor) and len(l.shape)>1:
+        l = l.squeeze(0)
     return [process_token(s, model) for s in l]
 
 def process_tokens_index(l, model=None):
@@ -37,6 +39,8 @@ def process_tokens_index(l, model=None):
         model = get_variable_from_caller("model")
     if isinstance(l, str):
         l = model.to_str_tokens(l)
+    elif isinstance(l, torch.Tensor) and len(l.shape)>1:
+        l = l.squeeze(0)
     return [f"{process_token(s, model)}/{i}" for i,s in enumerate(l)]
 
 def create_vocab_df(logit_vec, make_probs=False, full_vocab=None, model=None):
