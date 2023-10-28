@@ -67,7 +67,7 @@ import colorsys
 from IPython.display import display
 
 
-def create_html(strings, values, saturation=0.5, allow_different_length=False):
+def create_html(strings, values, saturation=0.5, allow_different_length=False, max_value=None, return_string=False):
     # escape strings to deal with tabs, newlines, etc.
     escaped_strings = [escape(s, quote=True) for s in strings]
     processed_strings = [
@@ -82,7 +82,8 @@ def create_html(strings, values, saturation=0.5, allow_different_length=False):
         assert len(processed_strings) == len(values)
 
     # scale values
-    max_value = max(max(values), -min(values))+1e-3
+    if max_value is None:
+        max_value = max(max(values), -min(values))+1e-3
     scaled_values = [v / max_value * saturation for v in values]
 
     # create html
@@ -106,7 +107,10 @@ def create_html(strings, values, saturation=0.5, allow_different_length=False):
         )
         html += f'<span style="background-color: {hex_color}; border: 1px solid lightgray; font-size: 16px; border-radius: 3px;">{s}</span>'
 
-    display(HTML(html))
+    if return_string:
+        return html
+    else:
+        display(HTML(html))
 
 
 # s = create_html(["a", "b\nd", "c        d"], [1, -2, -3])

@@ -101,6 +101,7 @@ from IPython.display import HTML
 # from torchtyping import TensorType as TT
 import pprint
 # import solu.utils as sutils
+import scipy
 # %%
 from IPython import get_ipython
 
