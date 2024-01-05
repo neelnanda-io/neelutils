@@ -211,3 +211,26 @@ def make_token_df(tokens, len_prefix=5, len_suffix=1, model=None):
         pos=pos,
         label=label,
     ))
+# %%
+CCD_LABELS = ["clean", "corr", "diff"]
+
+def plot_line_and_df(y, x, ascending=False, return_df=False, sort_col=None, line_labels = None, refactor_decomp=False, **kwargs):
+    y = to_numpy(y)
+    if refactor_decomp:
+        prefix = len([i for i in x if "out" not in i])
+        y = np.concatenate([y[..., :prefix], y[..., prefix::2], y[..., prefix+1::2]], axis=-1)
+        x = x[:prefix]+x[prefix::2]+x[prefix+1::2]
+
+    if line_labels is None:
+        line_labels = [str(i) for i in range(y.shape[0])]
+    if sort_col is None:
+        sort_col = line_labels[0]
+    line(y=y, x=x, line_labels=line_labels, **kwargs)
+    if len(y.shape)==1:
+        df = pd.DataFrame({"0": to_numpy(y)}, index=x).sort_values("0", ascending=ascending)
+    else:
+        df = pd.DataFrame({line_labels[i]: to_numpy(y[i]) for i in range(y.shape[0])}, index=x).sort_values(sort_col, ascending=ascending)
+
+    nutils.show_df(df.head(20))
+    if return_df:
+        return df
